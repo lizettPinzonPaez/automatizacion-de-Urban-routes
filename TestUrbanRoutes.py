@@ -1,80 +1,90 @@
-import time
-
-import data
-# import pytest
 from selenium import webdriver
-# from selenium.webdriver import Keys
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support.wait import WebDriverWait
-from UrbanRoutesPage import UrbanRoutesPage
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-
+import time
+import data
+from UrbanRoutesPage import UrbanRoutesPage
 
 
 class TestUrbanRoutes:
-
     driver = None
 
     @classmethod
     def setup_class(cls):
-        # no lo modifiques, ya que necesitamos un registro adicional habilitado para recuperar el código de confirmación del teléfono
         from selenium.webdriver import DesiredCapabilities
-        capabilities = DesiredCapabilities.EDGE
+        capabilities = DesiredCapabilities.CHROME
         capabilities["goog:loggingPrefs"] = {'performance': 'ALL'}
-        cls.driver = webdriver.Chrome(desired_capabilities=capabilities)
+        cls.driver = webdriver.Chrome()
 
-    def setup_class(cls):
-        cls.driver = webdriver.Edge()
-        cls.driver.implicitly_wait(10)
-        cls.driver.maximize_window()
-        cls.driver.get(data.URBAN_ROUTES_URL)
-        cls.driver.implicitly_wait(10)
-        cls.routes_page = UrbanRoutesPage(cls.driver)
-
-    # Configurar la dirección
+# Configurar la dirección
     def test_set_route(self):
-        self.driver.get(data.URBAN_ROUTES_URL)
+        self.driver.maximize_window()
+        self.driver.get(data.urban_routes_url)
+        time.sleep(5)
         routes_page = UrbanRoutesPage(self.driver)
-        address_from = data.ADDRESS_FROM
-        address_to = data.ADDRESS_TO
+        address_from = data.address_from
+        address_to = data.address_to
         routes_page.set_route(address_from, address_to)
-        assert routes_page.get_from() == address_from
-        assert routes_page.get_to() == address_to
+        # Añadir las siguientes líneas para obtener los valores de los campos de dirección y verificar la aserción
+        from_value = self.driver.find_element(*routes_page.from_field).get_attribute("value")
+        to_value = self.driver.find_element(*routes_page.to_field).get_attribute("value")
+        assert from_value == address_from
+        assert to_value == address_to
+        time.sleep(2)
 
-    # Seleccionar la tarifa Comfort.
+# Seleccionar la tarifa Comfort.
     def test_request_comfort_taxi(self):
         routes_page = UrbanRoutesPage(self.driver)
-        routes_page.click_request_taxi_button()
-        routes_page.click_comfort_button()
+        routes_page.open_taxi_modal()
+        routes_page.select_comfort_rate()
 
-    # Rellenar el número de teléfono
-    def test_fill_phone_verification(self):
+# Rellenar el número de teléfono
+    def test_add_phone_number(self):
         routes_page = UrbanRoutesPage(self.driver)
-        routes_page.click_phone_button()
-        routes_page.set_phone_number(data.PHONE_NUMBER)
-        routes_page.click_phone_next_button()
-        routes_page.click_confirm_button_in_verification()
+        phone_number = data.phone_number
+        routes_page.add_phone_number(phone_number)
 
-    # Agregar una tarjeta de crédito.
-    def test_add_card(self):
-        routes_page = UrbanRoutesPage(self.driver)
-        routes_page.click_payment_method_field()  # Presiona el campo de método de pago
-        routes_page.click_add_card_button()  # Presiona el botón de agregar tarjeta
-        routes_page.set_card_number()  # Ingresa el número de tarjeta
-        routes_page.set_card_code()  # Ingresa el código de la tarjeta
-        routes_page.click_add_card_confirm_button()  # Presiona el botón de confirmación
-        routes_page.click_exit_button_in_payment()  # Presiona el botón de salida
 
-    # Escribir un mensaje para el conductor
-    def test_write_message(self):
+    def test_add_phone_code(self):
         routes_page = UrbanRoutesPage(self.driver)
-        driver_message = data.MESSAGE_FOR_DRIVER
-        routes_page.set_comment_driver(driver_message)
+        routes_page.add_phone_code()
+        phone_number = data.phone_number
+
+# Agregar una tarjeta de crédito.
+    def test_add_credit_card(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        card_number = data.card_number
+        cvv = data.card_code
+        routes_page.add_credit_card(card_number, cvv)
+
+# Escribir un mensaje para el conductor
+    def test_message_to_driver(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        message_for_driver = data.message_for_driver
+        routes_page.message_to_driver(message_for_driver)
+
+# Pedir una manta y pañuelos.
+    def test_counter(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.click_blanket_switch()
+
+# Pedir 2 helados
+    def test_order_ice_creams(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.order_ice_creams()
+# Pedir taxi e informacion
+    def test_find_driver(self):
+        routes_page = UrbanRoutesPage(self.driver)
+        routes_page.click_smart_button()
+        WebDriverWait(self.driver, 3)
+# Esperar a que aparezca la información del conductor
+    def test_wait_driver_information(self):
+        routes_page = UrbanRoutesPage(self.driver)
         WebDriverWait(self.driver, 3)
 
     @classmethod
     def teardown_class(cls):
         cls.driver.quit()
-
 
