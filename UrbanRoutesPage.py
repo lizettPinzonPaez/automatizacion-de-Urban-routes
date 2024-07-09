@@ -1,14 +1,13 @@
-import data
-from selenium.webdriver import Keys
+from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
 import time
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.common.action_chains import ActionChains
+import data
 
 
-# SE CREO LA PAGINA RETRIVE PHONE CODE PARA EL METODO DE OBTENER EL CODIGO DEL CELULAR
-# no modificar
+# No modificar
 def retrieve_phone_code(driver) -> str:
     """Este código devuelve un número de confirmación de teléfono y lo devuelve como un string.
     Utilízalo cuando la aplicación espere el código de confirmación para pasarlo a tus pruebas.
@@ -33,133 +32,135 @@ def retrieve_phone_code(driver) -> str:
         if not code:
             raise Exception("No se encontró el código de confirmación del teléfono.\n"
                             "Utiliza 'retrieve_phone_code' solo después de haber solicitado el código en tu aplicación.")
-        return code
+    return code
 
-
+# Localizadores
 class UrbanRoutesPage:
+# Configurar la dirección
+    from_field = (By.ID, 'from')
+    to_field = (By.ID, 'to')
+# Seleccionar la tarifa Comfort.
+    ask_for_taxi_button = (By.XPATH, '//button[@type="button" and @class="button round" and text()="Pedir un taxi"]')
+    comfort_rate_button = (By.XPATH, '//div[@class="tcard-icon"]/img[@alt="Comfort"]')
+# Rellenar el número de teléfono
+    phone_number_area = (By.CSS_SELECTOR, "div.np-text")
+    phone_number_label = (By.CSS_SELECTOR, "label[for='phone']")
+    phone_number_input = (By.CSS_SELECTOR, "input#phone")
+    next_button = (By.CSS_SELECTOR, "button.button.full")
+    phone_number_display = (By.XPATH, "//div[@class='np-text' and text()='+1 123 123 12 12']")
+# Codigo de telefono
+    code_label = (By.CSS_SELECTOR, "label[for='code']")
+    code_input = (By.CSS_SELECTOR, "input#code")
+    submit_button = (By.XPATH, "//button[@type='submit' and contains(@class, 'button full') and text()='Confirmar']")
+# Agregar una tarjeta de crédito.
+    payment_method_button = (By.XPATH, '//div[@class="pp-text" and text()="Método de pago"]')
+    add_credit_card_button = (By.XPATH, '//img[@class="pp-plus" and @alt="plus"]')
+    credit_card_number_field = (By.ID, 'number')
+    cvv_field = (By.CSS_SELECTOR, "div.card-code-input input.card-input")
+    outside_click_area = (By.CSS_SELECTOR, "div.plc")
+    add_card_button = (By.XPATH, '//button[@type="submit" and @class="button full" and text()="Agregar"]')
+    close_button_payment_method = (By.XPATH, '//*[@id="root"]/div/div[2]/div[2]/div[1]/button')
+    payment_method_card_label = (By.XPATH, '//div[@class="pp-value-text" and text()="Tarjeta"]')
+
+# Mensaje para el conductor
+    label_for_comment = (By.CSS_SELECTOR, 'label[for="comment"].label')
+    message_to_driver_field = (By.ID, "comment")
+# Pedir una manta y pañuelos.
+    blanket_and_tissues_switch = (By.CSS_SELECTOR, "div.switch")
+    blanket_and_tissues_checkbox = (By.CLASS_NAME, 'r-sw')
+# # Pedir 2 helados
+    ice_cream_plus_button = (By.XPATH,
+                             "//div[@class='r-counter-label' and text()='Helado']/following-sibling::div[@class='r-counter']//div[@class='counter-plus']")
+    ice_cream_counter = (By.XPATH, "//div[@class='r-counter-label' and text()='Helado']/following-sibling::div[@class='r-counter']//div[contains(@class, 'counter-value')]")
+
+# Pedir taxi e informacion
+    request_taxi_button = (By.XPATH, "//button[@type='button' and .//span[text()='Pedir un taxi']]")
+    order_popup = (
+    By.XPATH, "//div[@class='order-body']//div[@class='order-header-title' and text()='Buscar automóvil']")
+    driver_info = (By.XPATH, "//div[@class='order-header-title' and contains(text(), 'El conductor llegará en')]")
+
 
     def __init__(self, driver):
         self.driver = driver
-    # Configurar la dirección
-        self.from_field = (By.ID, 'from')
-        self.to_field = (By.ID, 'to')
-    # Seleccionar la tarifa Comfort.
-        self.call_button = (By.CLASS_NAME, 'button.round')
-        self.comfort_button = (By.XPATH, "(//div[text()='Comfort'])[1]")
-        self.comfort_button_container = (By.XPATH, "//div[@class='tcard active']")
-    # Rellenar el número de teléfono
-        self.phone_button = (By.XPATH, '//div[@class="np-button"]')
-        self.phone_field = (By.ID, "phone")
-        self.phone_next_button = (By.XPATH, "(//button[@type='submit'])[1]")
-        self.code_field = (By.ID, "code")
-        self.code_confirm_button = (By.XPATH, "(//button[@type='submit'])[2]")
-    # Agregar una tarjeta de crédito.
-        self.payment_method_field = (By.CSS_SELECTOR, '.pp-button.filled >.pp-text')
-        self.add_card_button = (By.XPATH, "//div[@class='pp-plus-container']//img[1]")
-        self.card_number_field = (By.ID, "number")
-        self.card_code_field = (By.XPATH, "(//input[@id='code'])[2]")
-        self.add_card_confirm_button = (By.XPATH, "//button[text()='Agregar']")
-        self.exit_button_in_payment = (By.XPATH, "(//button[@class='close-button section-close'])[3]")
-        self.payment_method_selected = (By.CLASS_NAME, 'pp-value-text')
-    # Escribir un mensaje para el conductor
-        self.message_to_driver_field = (By.ID, "comment")
-        self.comment_field = (By.CSS_SELECTOR, '.tariff-picker.shown>.form>:nth-child(3)>div')
-        self.error_message_comment = (By.XPATH, '//div[contains(text(), "Longitud máxima 24")]')
-    # Pedir una manta y pañuelos.
-        blankets_and_tissues_button = (By.XPATH, "(//span[@class='slider round'])[1]")
-        blankets_and_tissues_checkbox = (By.CSS_SELECTOR, ".switch input.switch-input")
-    # Pedir 2 helados
-        add_ice_cream_button = (By.XPATH, "(//div[@class='counter-plus'])[1]")
-        ice_cream_counter = (By.XPATH, "(//div[@class='counter']//div)[2]")
-    # Aparece el modal para buscar un taxi.
-        order_taxi_button = (By.XPATH, "(//button[@type='button']//span)[1]")
-    # Esperar a que aparezca la información del conductor
-        waiting_popup_header = (By.CLASS_NAME, "order-header-title")
-        order_countdown_timer = (By.CLASS_NAME, "order-header-time")
-
-
-
-
 # Configurar la dirección
-    def set_from(self, from_address):
+    def set_route(self, from_address, to_address):
         self.driver.find_element(*self.from_field).send_keys(from_address)
-
-    def set_to(self, to_address):
         self.driver.find_element(*self.to_field).send_keys(to_address)
 
-    def get_from(self):
-        return self.driver.find_element(*self.from_field).get_property('value')
-
-    def get_to(self):
-        return self.driver.find_element(*self.to_field).get_property('value')
-
-    def set_route(self, from_address, to_address):
-        self.set_from(from_address)
-        self.set_to(to_address)
-
-# Seleccionar la tarifa Comfort.
-    def click_request_taxi_button(self):
-        self.driver.find_element(*self.call_button).click()
-
-    def click_comfort_button(self):
-        self.driver.find_element(*self.comfort_button).click()
-        time.sleep(3)
-
-# Rellenar el número de teléfono
-    def click_phone_button(self):
-        self.driver.find_element(*self.phone_button).click()
-
-    def set_phone_number(self, phone_number):
-        self.driver.find_element(*self.phone_field).send_keys(phone_number)
-        time.sleep(3)
-
-
-    def click_phone_next_button(self):
-        self.driver.find_element(*self.phone_next_button).click()
-        time.sleep(3)
-
-    def set_code_phone(self):
-        self.driver.find_element(*self.code_field).send_keys(retrive_phone_code.retrieve_phone_code(self.driver))
-
-    def click_confirm_button_in_verification(self):
-        self.driver.find_element(*self.code_confirm_button).click()
-        time.sleep (5)
-
-    def click_exit_button_in_payment_popup(self):
-        self.driver.find_element(*self.exit_button_in_payment).click()
-
-    def scroll_to_element(self, element):
-        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
-        time.sleep (5)
-
-# Agregar una tarjeta de crédito.
-    def scroll_and_click(self, payment_method_field):
-        element = WebDriverWait(self.driver, 30).until(expected_conditions.visibility_of_element_located(payment_method_field))
-        self.driver.execute_script("arguments[0].scrollIntoView();", element)
-        WebDriverWait(self.driver, 10).until(expected_conditions.element_to_be_clickable(payment_method_field)).click()
-    def click_payment_method_field(self):
+    def open_taxi_modal(self):
         wait = WebDriverWait(self.driver, 10)
-        payment_method_field = wait.until(expected_conditions.element_to_be_clickable(self.payment_method_field))
-        # actions = ActionChains(self.driver)
-        # actions.move_to_element(payment_method_field).perform()
-        payment_method_field.click()
-    def click_add_card_button(self):
+        wait.until(EC.visibility_of_element_located(self.ask_for_taxi_button)).click()
+        time.sleep(1)
+# Seleccionar la tarifa Comfort.
+    def select_comfort_rate(self):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.element_to_be_clickable(self.comfort_rate_button)).click()
+        time.sleep(1)
+# Rellenar el número de teléfono
+    def add_phone_number(self, phone_number):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.element_to_be_clickable(self.phone_number_area)).click()
+        wait.until(EC.element_to_be_clickable(self.phone_number_label)).click()
+        self.driver.find_element(*self.phone_number_input).send_keys(phone_number)
+        wait.until(EC.element_to_be_clickable(self.next_button)).click()
+        time.sleep(2)
+
+    def add_phone_code(self):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.element_to_be_clickable(self.code_label)).click()
+        self.driver.find_element(*self.code_input).send_keys(retrieve_phone_code(self.driver))
+        wait.until(EC.element_to_be_clickable(self.submit_button)).click()
+        time.sleep(2)
+# Agregar una tarjeta de crédito.
+    def add_credit_card(self, card_number, cvv):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.element_to_be_clickable(self.payment_method_button)).click()
+        wait.until(EC.element_to_be_clickable(self.add_credit_card_button)).click()
+
+        credit_card_field = self.driver.find_element(*self.credit_card_number_field)
+        credit_card_field.click()
+        credit_card_field.send_keys(card_number)
+
+        cvv_field = self.driver.find_element(*self.cvv_field)
+        cvv_field.click()
+        cvv_field.send_keys(cvv)
+        time.sleep(2)
+
+        self.driver.find_element(*self.outside_click_area).click()
         self.driver.find_element(*self.add_card_button).click()
-    def set_card_number(self):
-        self.driver.find_element(*self.card_number_field).send_keys(data.CARD_NUMBER)
-    def set_card_code(self):
-        self.driver.find_element(*self.card_code_field).send_keys(data.CARD_CODE)
-    def click_add_card_confirm_button(self):
-       self.driver.find_element(*self.add_card_confirm_button).click()
-    def click_exit_button_in_payment(self):
-        self.driver.find_element(*self.exit_button_in_payment).click()
+        self.driver.find_element(*self.close_button_payment_method).click()
+        time.sleep(2)
+
+    def verify_credit_card_added(self):
+        wait = WebDriverWait(self.driver, 10)
+        payment_method_card_element = wait.until(EC.visibility_of_element_located(self.payment_method_card_label))
+        return payment_method_card_element.is_displayed()
 # Escribir un mensaje para el conductor
-    def click_comment_field(self):
-        self.driver.find_element(*self.comment_field).click()
+    def message_to_driver(self, message):
+        label_field = self.driver.find_element(*self.label_for_comment)
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", label_field)
+        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(self.label_for_comment))
+        label_field.click()
+        message_field = self.driver.find_element(*self.message_to_driver_field)
+        message_field.send_keys(message)
+        time.sleep(2)
+# Pedir una manta y pañuelos.
+    def click_blanket_switch(self):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.element_to_be_clickable(self.blanket_and_tissues_switch)).click()
+        self.driver.find_element(*self.blanket_and_tissues_switch).click()
+        time.sleep(1)
 
-    def write_comment(self, message):
-        self.driver.find_element(*self.message_to_driver_field).send_keys(message)
+# Pedir 2 helados
+    def order_ice_creams(self):
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(EC.element_to_be_clickable(self.ice_cream_plus_button)).click()
+        wait.until(EC.element_to_be_clickable(self.ice_cream_plus_button)).click()
+        time.sleep(2)
 
-    def set_comment_driver(self, message):
-        self.click_comment_field()
-        self.write_comment(message)
+# Pedir taxi e informacion
+    def click_smart_button(self):
+       self.driver.find_element(*self.request_taxi_button).click()
+# Esperar a que aparezca la información del conductor
+    def get_driver_information(self):
+        WebDriverWait(self.driver, 60).until(EC.visibility_of_element_located(self.driver_info))
