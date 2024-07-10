@@ -3,36 +3,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-import time
+from helpers import retrieve_phone_code
 import data
+import time
 
 
-# No modificar
-def retrieve_phone_code(driver) -> str:
-    """Este código devuelve un número de confirmación de teléfono y lo devuelve como un string.
-    Utilízalo cuando la aplicación espere el código de confirmación para pasarlo a tus pruebas.
-    El código de confirmación del teléfono solo se puede obtener después de haberlo solicitado en la aplicación."""
-
-    import json
-    import time
-    from selenium.common import WebDriverException
-    code = None
-    for i in range(10):
-        try:
-            logs = [log["message"] for log in driver.get_log('performance') if log.get("message")
-                    and 'api/v1/number?number' in log.get("message")]
-            for log in reversed(logs):
-                message_data = json.loads(log)["message"]
-                body = driver.execute_cdp_cmd('Network.getResponseBody',
-                                              {'requestId': message_data["params"]["requestId"]})
-                code = ''.join([x for x in body['body'] if x.isdigit()])
-        except WebDriverException:
-            time.sleep(1)
-            continue
-        if not code:
-            raise Exception("No se encontró el código de confirmación del teléfono.\n"
-                            "Utiliza 'retrieve_phone_code' solo después de haber solicitado el código en tu aplicación.")
-    return code
 
 # Localizadores
 class UrbanRoutesPage:
@@ -61,18 +36,16 @@ class UrbanRoutesPage:
     add_card_button = (By.XPATH, '//button[@type="submit" and @class="button full" and text()="Agregar"]')
     close_button_payment_method = (By.XPATH, '//*[@id="root"]/div/div[2]/div[2]/div[1]/button')
     payment_method_card_label = (By.XPATH, '//div[@class="pp-value-text" and text()="Tarjeta"]')
-
 # Mensaje para el conductor
     label_for_comment = (By.CSS_SELECTOR, 'label[for="comment"].label')
     message_to_driver_field = (By.ID, "comment")
 # Pedir una manta y pañuelos.
     blanket_and_tissues_switch = (By.CSS_SELECTOR, "div.switch")
-    blanket_and_tissues_checkbox = (By.CLASS_NAME, 'r-sw')
+    blanket_and_tissues_checkbox = (By.CLASS_NAME, 'r-sw') #selector class name
 # # Pedir 2 helados
     ice_cream_plus_button = (By.XPATH,
                              "//div[@class='r-counter-label' and text()='Helado']/following-sibling::div[@class='r-counter']//div[@class='counter-plus']")
     ice_cream_counter = (By.XPATH, "//div[@class='r-counter-label' and text()='Helado']/following-sibling::div[@class='r-counter']//div[contains(@class, 'counter-value')]")
-
 # Pedir taxi e informacion
     request_taxi_button = (By.XPATH, "//button[@type='button' and .//span[text()='Pedir un taxi']]")
     order_popup = (
@@ -90,12 +63,12 @@ class UrbanRoutesPage:
     def open_taxi_modal(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.visibility_of_element_located(self.ask_for_taxi_button)).click()
-        time.sleep(1)
+
 # Seleccionar la tarifa Comfort.
     def select_comfort_rate(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.comfort_rate_button)).click()
-        time.sleep(1)
+
 # Rellenar el número de teléfono
     def add_phone_number(self, phone_number):
         wait = WebDriverWait(self.driver, 10)
@@ -103,14 +76,14 @@ class UrbanRoutesPage:
         wait.until(EC.element_to_be_clickable(self.phone_number_label)).click()
         self.driver.find_element(*self.phone_number_input).send_keys(phone_number)
         wait.until(EC.element_to_be_clickable(self.next_button)).click()
-        time.sleep(2)
+
 
     def add_phone_code(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.code_label)).click()
         self.driver.find_element(*self.code_input).send_keys(retrieve_phone_code(self.driver))
         wait.until(EC.element_to_be_clickable(self.submit_button)).click()
-        time.sleep(2)
+
 # Agregar una tarjeta de crédito.
     def add_credit_card(self, card_number, cvv):
         wait = WebDriverWait(self.driver, 10)
@@ -129,7 +102,7 @@ class UrbanRoutesPage:
         self.driver.find_element(*self.outside_click_area).click()
         self.driver.find_element(*self.add_card_button).click()
         self.driver.find_element(*self.close_button_payment_method).click()
-        time.sleep(2)
+
 
     def verify_credit_card_added(self):
         wait = WebDriverWait(self.driver, 10)
@@ -143,20 +116,20 @@ class UrbanRoutesPage:
         label_field.click()
         message_field = self.driver.find_element(*self.message_to_driver_field)
         message_field.send_keys(message)
-        time.sleep(2)
+
 # Pedir una manta y pañuelos.
     def click_blanket_switch(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.blanket_and_tissues_switch)).click()
         self.driver.find_element(*self.blanket_and_tissues_switch).click()
-        time.sleep(1)
+
 
 # Pedir 2 helados
     def order_ice_creams(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.ice_cream_plus_button)).click()
         wait.until(EC.element_to_be_clickable(self.ice_cream_plus_button)).click()
-        time.sleep(2)
+
 
 # Pedir taxi e informacion
     def click_smart_button(self):
@@ -164,3 +137,5 @@ class UrbanRoutesPage:
 # Esperar a que aparezca la información del conductor
     def get_driver_information(self):
         WebDriverWait(self.driver, 60).until(EC.visibility_of_element_located(self.driver_info))
+
+# quite el time slepp ya que en el mismo metodo llama a la espera de forma mejor
