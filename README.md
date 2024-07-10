@@ -17,15 +17,18 @@ Urbanroutes.py: pagina que contiene los modulos para llamar a los test cases en 
 Testurbanroutes.py: estan definidos todos los test con los que se realizo la comprobacion 
 
 Instrucciones de Ejecución
-Clona este repositorio en tu máquina local.
-Configura las variables de entorno necesarias, como la URL del servidor de Urban 
-Ejecuta las pruebas utilizando el comando pytest.
+- Clona este repositorio en tu máquina local.
+- Configura las variables de entorno necesarias, como la URL del servidor de Urban 
+- Ejecuta las pruebas utilizando el comando pytest.
+  
 
-Requisitos del Sistema
-Necesitas tener instalados los paquetes pytest y selenium para ejecutar las pruebas.
+Requisitos del Sistema # (se actualizaron segun correccion)
+- Necesitas tener instalados los paquetes pytest y selenium para ejecutar las pruebas.
+- Un navegador web compatible (por ejemplo, Chrome, Firefox)
+- El controlador adecuado para el navegador web (por ejemplo, `chromedriver` para Chrome, `geckodriver` para Firefox)
 
-Ejemplos de Uso
-Una vez que las pruebas hayan sido ejecutadas con éxito, puedes revisar los resultados en la consola
+Ejemplos de Uso # (se actualizaron segun correccion)
+Una vez que las pruebas hayan sido ejecutadas con éxito, puedes revisar los resultados en la consola, para ejecutar estas pruebas debes escribir en la terminal el comnado Pytest + ruta de archivo de pruebas (testurbanroutes.py) y luego enter.
 
 Lenguajes de Programacion
 Python
