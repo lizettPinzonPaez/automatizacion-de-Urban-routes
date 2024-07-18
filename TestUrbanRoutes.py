@@ -1,8 +1,10 @@
+from unittest import result
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from UrbanRoutesPage import UrbanRoutesPage
 import data
-import time
+from selenium.webdriver.support import expected_conditions as EC
+# quite la importacion time
 
 
 
@@ -36,9 +38,12 @@ class TestUrbanRoutes:
         routes_page = UrbanRoutesPage(self.driver)
         routes_page.open_taxi_modal()
         routes_page.select_comfort_rate()
+        wait = WebDriverWait(self.driver, 10)
+        modal_open = wait.until(EC.visibility_of_element_located(routes_page.comfort_rate_button))
+        assert modal_open, "El modal del taxi no se abrió correctamente."
 
 
-# Rellenar el número de teléfono
+    # Rellenar el número de teléfono
     def test_add_phone_number(self):
         routes_page = UrbanRoutesPage(self.driver)
         phone_number = data.phone_number
@@ -71,9 +76,11 @@ class TestUrbanRoutes:
         assert displayed_message == message_for_driver #assert
 
 # Pedir una manta y pañuelos.
-    def test_counter(self):
+    def test_Toggle_Switch_Activation(self): #cambio de nombre de test
         routes_page = UrbanRoutesPage(self.driver)
         routes_page.click_blanket_switch()
+        checkbox_element = self.driver.find_element(*routes_page.blanket_and_tissues_checkbox)
+        assert result, "El interruptor no se activó correctamente"
 
 # Pedir 2 helados
     def test_order_ice_creams(self):
@@ -88,14 +95,16 @@ class TestUrbanRoutes:
         routes_page = UrbanRoutesPage(self.driver)
         routes_page.click_smart_button()
         WebDriverWait(self.driver, 3)
+        assert self.driver.find_element(*routes_page.request_taxi_button).is_displayed(), "El botón 'Pedir un taxi' no está visible después de llenar el formulario."
 
 # Esperar a que aparezca la información del conductor
     def test_wait_driver_information(self):
         routes_page = UrbanRoutesPage(self.driver)
         WebDriverWait(self.driver, 3)
+        routes_page.get_driver_information()
+        assert self.driver.find_element(
+        *routes_page.driver_info).is_displayed(), "La información del conductor no está visible después de solicitar el taxi."
 
     @classmethod
     def teardown_class(cls):
         cls.driver.quit()
-
-
