@@ -5,7 +5,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from helpers import retrieve_phone_code
 import data
-import time
+# quite la importacion time
 
 
 
@@ -97,7 +97,7 @@ class UrbanRoutesPage:
         cvv_field = self.driver.find_element(*self.cvv_field)
         cvv_field.click()
         cvv_field.send_keys(cvv)
-        time.sleep(2)
+        # quite el time slepp
 
         self.driver.find_element(*self.outside_click_area).click()
         self.driver.find_element(*self.add_card_button).click()
