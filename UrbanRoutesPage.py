@@ -17,6 +17,8 @@ class UrbanRoutesPage:
 # Seleccionar la tarifa Comfort.
     ask_for_taxi_button = (By.XPATH, '//button[@type="button" and @class="button round" and text()="Pedir un taxi"]')
     comfort_rate_button = (By.XPATH, '//div[@class="tcard-icon"]/img[@alt="Comfort"]')
+    comfort_button_container = (By.XPATH, "//div[@class='tcard active']") #encontre los localizadores solicitados
+    comfort_rate_text = (By.XPATH, "//div[@class='tcard-title' and text()='Comfort']") #encontre los localizadores solicitados
 # Rellenar el número de teléfono
     phone_number_area = (By.CSS_SELECTOR, "div.np-text")
     phone_number_label = (By.CSS_SELECTOR, "label[for='phone']")
@@ -41,7 +43,7 @@ class UrbanRoutesPage:
     message_to_driver_field = (By.ID, "comment")
 # Pedir una manta y pañuelos.
     blanket_and_tissues_switch = (By.CSS_SELECTOR, "div.switch")
-    blanket_and_tissues_checkbox = (By.CLASS_NAME, 'r-sw') #selector class name
+    blanket_and_tissues_checkbox = (By.CSS_SELECTOR, ".switch input.switch-input")
 # # Pedir 2 helados
     ice_cream_plus_button = (By.XPATH,
                              "//div[@class='r-counter-label' and text()='Helado']/following-sibling::div[@class='r-counter']//div[@class='counter-plus']")
@@ -50,6 +52,7 @@ class UrbanRoutesPage:
     request_taxi_button = (By.XPATH, "//button[@type='button' and .//span[text()='Pedir un taxi']]")
     order_popup = (
     By.XPATH, "//div[@class='order-body']//div[@class='order-header-title' and text()='Buscar automóvil']")
+# Esperar a que aparezca la información del conductor
     driver_info = (By.XPATH, "//div[@class='order-header-title' and contains(text(), 'El conductor llegará en')]")
 
 
@@ -68,7 +71,9 @@ class UrbanRoutesPage:
     def select_comfort_rate(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.comfort_rate_button)).click()
-
+        wait.until(EC.visibility_of_element_located(self.comfort_button_container))
+        comfort_text = self.driver.find_element(*self.comfort_rate_text).text
+        assert comfort_text == "Comfort", "La tarifa Comfort no está seleccionada correctamente."
 # Rellenar el número de teléfono
     def add_phone_number(self, phone_number):
         wait = WebDriverWait(self.driver, 10)
@@ -121,8 +126,7 @@ class UrbanRoutesPage:
     def click_blanket_switch(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.blanket_and_tissues_switch)).click()
-        self.driver.find_element(*self.blanket_and_tissues_switch).click()
-
+        #correccion de 2 clic en el boton
 
 # Pedir 2 helados
     def order_ice_creams(self):
