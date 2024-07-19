@@ -1,10 +1,12 @@
-from unittest import result
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 from UrbanRoutesPage import UrbanRoutesPage
 import data
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as EC
 # quite la importacion time
+
 
 
 
@@ -39,9 +41,10 @@ class TestUrbanRoutes:
         routes_page.open_taxi_modal()
         routes_page.select_comfort_rate()
         wait = WebDriverWait(self.driver, 10)
-        modal_open = wait.until(EC.visibility_of_element_located(routes_page.comfort_rate_button))
-        assert modal_open, "El modal del taxi no se abrió correctamente."
-
+        active_tcard = wait.until(EC.visibility_of_element_located(routes_page.comfort_button_container))
+        assert active_tcard, "La tarifa Comfort no está seleccionada correctamente." #correccion de assert para verificar la seleccion de la tarifa comford
+        comfort_text = self.driver.find_element(*routes_page.comfort_rate_text).text
+        assert comfort_text == "Comfort", "El texto de la tarifa seleccionada no es 'Comfort'." #correccion de assert para verificar texto de la tarifa comford
 
     # Rellenar el número de teléfono
     def test_add_phone_number(self):
@@ -76,11 +79,12 @@ class TestUrbanRoutes:
         assert displayed_message == message_for_driver #assert
 
 # Pedir una manta y pañuelos.
-    def test_Toggle_Switch_Activation(self): #cambio de nombre de test
+    def test_order_blanket_and_handkerchiefs(self): #cambio de nombre de test
         routes_page = UrbanRoutesPage(self.driver)
         routes_page.click_blanket_switch()
-        checkbox_element = self.driver.find_element(*routes_page.blanket_and_tissues_checkbox)
-        assert result, "El interruptor no se activó correctamente"
+        wait = WebDriverWait(self.driver, 10)
+        checkbox_element = wait.until(EC.presence_of_element_located(routes_page.blanket_and_tissues_checkbox))
+        assert checkbox_element.is_selected(), "El interruptor no se activó correctamente." #se cambio la asercion
 
 # Pedir 2 helados
     def test_order_ice_creams(self):
@@ -94,8 +98,9 @@ class TestUrbanRoutes:
     def test_find_driver(self):
         routes_page = UrbanRoutesPage(self.driver)
         routes_page.click_smart_button()
-        WebDriverWait(self.driver, 3)
-        assert self.driver.find_element(*routes_page.request_taxi_button).is_displayed(), "El botón 'Pedir un taxi' no está visible después de llenar el formulario."
+        wait = WebDriverWait(self.driver, 10)
+        order_popup_visible =wait.until(EC.visibility_of_element_located(routes_page.order_popup))
+        assert order_popup_visible, "El modal 'Buscar automóvil' no se mostró correctamente." #se cambia assert
 
 # Esperar a que aparezca la información del conductor
     def test_wait_driver_information(self):
@@ -108,3 +113,5 @@ class TestUrbanRoutes:
     @classmethod
     def teardown_class(cls):
         cls.driver.quit()
+
+
