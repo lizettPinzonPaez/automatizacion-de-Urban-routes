@@ -5,8 +5,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from helpers import retrieve_phone_code
 import data
-# quite la importacion time
-
 
 
 # Localizadores
