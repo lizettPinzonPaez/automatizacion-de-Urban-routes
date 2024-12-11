@@ -1,4 +1,3 @@
-PROYECTO 7
 Hola mi nombre es Lizett Pinzon Qa Engineer de Bogota Colombia
 
 Automatización de Pruebas interfaz Urban Routes con Selenium
